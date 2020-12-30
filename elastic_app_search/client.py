@@ -1,5 +1,6 @@
 import json
 import jwt
+import requests
 from .request_session import RequestSession
 from .exceptions import InvalidDocument
 
@@ -12,11 +13,15 @@ class Client:
     def __init__(self, host_identifier='', api_key='',
                  base_endpoint=ELASTIC_APP_SEARCH_BASE_ENDPOINT,
                  use_https=True,
-                 account_host_key='' # Deprecated - use host_identifier instead
+                 use_ssl=True,
+                 account_host_key=''  # Deprecated - use host_identifier instead
                  ):
         self.host_identifier = host_identifier or account_host_key
-        self.account_host_key = self.host_identifier # Deprecated
+        self.account_host_key = self.host_identifier  # Deprecated
         self.api_key = api_key
+
+        if not use_ssl:
+            requests.packages.urllib3.disable_warnings()
 
         uri_scheme = 'https' if use_https else 'http'
         host_prefix = host_identifier + '.' if host_identifier else ''
@@ -43,7 +48,7 @@ class Client:
         :param size: Number of documents to return per page
         :return: List of documemts.
         """
-        data = { 'page': { 'current': current, 'size': size } }
+        data = {'page': {'current': current, 'size': size}}
         return self.session.request('get', "engines/{}/documents/list".format(engine_name), json=data)
 
     def index_document(self, engine_name, document):
@@ -138,7 +143,7 @@ class Client:
         :return: List of dictionaries with key value pair corresponding to the
         name of the engine.
         """
-        data = { 'page': { 'current': current, 'size': size } }
+        data = {'page': {'current': current, 'size': size}}
         return self.session.request('get', 'engines', json=data)
 
     def get_engine(self, engine_name):
@@ -157,7 +162,7 @@ class Client:
         :param options: Engine configuration.
         :return: A dictionary corresponding to the new engine.
         """
-        data = { 'name': engine_name }
+        data = {'name': engine_name}
         if language is not None:
             data['language'] = language
         if options is not None:
@@ -182,7 +187,7 @@ class Client:
         :param size: Number of synonym sets to return per page.
         :return: List of synonym sets.
         """
-        data = { 'page': { 'current': current, 'size': size } }
+        data = {'page': {'current': current, 'size': size}}
         return self.session.request('get', "engines/{}/synonyms".format(engine_name), json=data)
 
     def get_synonym_set(self, engine_name, synonym_set_id):
@@ -203,7 +208,7 @@ class Client:
         :param synonyms: List of synonyms.
         :return: A list of synonyms that was created.
         """
-        data = { 'synonyms': synonyms }
+        data = {'synonyms': synonyms}
         return self.session.request('post', "engines/{}/synonyms".format(engine_name), json=data)
 
     def update_synonym_set(self, engine_name, synonym_set_id, synonyms):
@@ -215,7 +220,7 @@ class Client:
         :param synonyms: The updated list of synonyms.
         :return: The synonym set that was updated.
         """
-        data = { 'synonyms': synonyms }
+        data = {'synonyms': synonyms}
         return self.session.request('put', "engines/{}/synonyms/{}".format(engine_name, synonym_set_id), json=data)
 
     def destroy_synonym_set(self, engine_name, synonym_set_id):
@@ -360,4 +365,3 @@ class Client:
         endpoint = "engines/{}/logs/api".format(engine_name)
         options = options or {}
         return self.session.request('get', endpoint, json=options)
-
