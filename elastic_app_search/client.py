@@ -19,6 +19,7 @@ class Client:
         self.host_identifier = host_identifier or account_host_key
         self.account_host_key = self.host_identifier  # Deprecated
         self.api_key = api_key
+        self.use_ssl = use_ssl
 
         if not use_ssl:
             requests.packages.urllib3.disable_warnings()
@@ -26,7 +27,7 @@ class Client:
         uri_scheme = 'https' if use_https else 'http'
         host_prefix = host_identifier + '.' if host_identifier else ''
         base_url = "{}://{}{}".format(uri_scheme, host_prefix, base_endpoint)
-        self.session = RequestSession(self.api_key, base_url)
+        self.session = RequestSession(self.api_key, self.use_ssl, base_url)
 
     def get_documents(self, engine_name, document_ids):
         """

@@ -5,10 +5,11 @@ from .exceptions import InvalidCredentials, NonExistentRecord, RecordAlreadyExis
 
 class RequestSession:
 
-    def __init__(self, api_key, base_url):
+    def __init__(self, api_key, use_ssl, base_url):
         self.api_key = api_key
         self.base_url = base_url
         self.session = requests.Session()
+        self.use_ssl = use_ssl
 
         headers = {
             'Authorization': "Bearer {}".format(api_key),
